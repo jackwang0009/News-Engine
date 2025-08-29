@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15
+    container_name: news_engine_postgres
+    environment:
+      POSTGRES_DB: news_engine
+      POSTGRES_USER: news_engine
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - news_engine_network
+
+  # MongoDB数据库
+  mongodb:
+    image: mongo:7
+    container_name: news_engine_mongodb
+    environment:
+      MONGO_INITDB_DATABASE: news_engine
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - news_engine_network
+
+  # Redis缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: news_engine_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - news_engine_network
+
+  # Elasticsearch搜索引擎
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: news_engine_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - news_engine_network
+
+  # News Engine API服务
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: news_engine_api
+    ports:
+      - "9000:9000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - MONGODB_URL=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - ELASTICSEARCH_HOST=elasticsearch
+      - DEBUG=true
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+      - elasticsearch
+    networks:
+      - news_engine_network
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+
+  # Celery Worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: news_engine_worker
+    command: python scripts/start_celery_worker.py
+    environment:
+      - POSTGRES_HOST=postgres
+      - MONGODB_URL=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - ELASTICSEARCH_HOST=elasticsearch
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+      - elasticsearch
+    networks:
+      - news_engine_network
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+
+  # Celery Beat
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: news_engine_beat
+    command: python scripts/start_celery_beat.py
+    environment:
+      - POSTGRES_HOST=postgres
+      - MONGODB_URL=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - ELASTICSEARCH_HOST=elasticsearch
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+      - elasticsearch
+    networks:
+      - news_engine_network
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+
+  # Flower监控
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: news_engine_flower
+    command: celery -A app.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    networks:
+      - news_engine_network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  news_engine_network:
+    driver: bridge

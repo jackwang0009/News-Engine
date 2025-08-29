@@ -1,0 +1,56 @@
+[
+  {
+    "name": "RSS源 - /sitemap.xml",
+    "url": "https://www.bbc.com/sitemap.xml",
+    "type": "rss",
+    "parser": "rss",
+    "crawl_interval": 600,
+    "discovery_method": "common_path",
+    "config": {
+      "basic": {
+        "delay": 1.0,
+        "timeout": 30,
+        "max_retries": 3,
+        "max_pages": 10
+      },
+      "rss": {
+        "parse_items": true,
+        "parse_content": true,
+        "max_items": 50
+      }
+    }
+  },
+  {
+    "name": "News - 网站爬虫",
+    "url": "https://www.bbc.com/news",
+    "type": "website",
+    "parser": "auto_generated",
+    "crawl_interval": 300,
+    "discovery_method": "structure_analysis",
+    "section_name": "News",
+    "config": {
+      "basic": {
+        "delay": 1.0,
+        "timeout": 30,
+        "max_retries": 3,
+        "max_pages": 10
+      },
+      "website": {
+        "list_page_selectors": {
+          "article_link": "a[href*=\"news\"], a[href*=\"article\"]"
+        },
+        "article_selectors": {
+          "title": "h1, .title, .headline, [class*=\"title\"]",
+          "content": ".content, .article-content, .post-content, [class*=\"content\"]",
+          "author": ".author, .byline, [class*=\"author\"]",
+          "publish_time": ".time, .date, .publish-time, [class*=\"time\"]",
+          "summary": ".summary, .excerpt, .description, [class*=\"summary\"]"
+        },
+        "pagination_selectors": {
+          "next_page": ".next, .next-page, [class*=\"next\"]",
+          "page_numbers": ".page, .pagination a, [class*=\"page\"]"
+        }
+      }
+    }
+  }
+]

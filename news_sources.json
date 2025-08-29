@@ -1,0 +1,51 @@
+{
+    "easy_sources": [
+      {
+        "name": "百度新闻",
+        "url": "https://news.baidu.com",
+        "type": "website",
+        "notes": "静态页面为主，HTML结构清晰，适合初期抓取"
+      },
+      {
+        "name": "新浪新闻",
+        "url": "https://news.sina.com.cn",
+        "type": "website",
+        "notes": "传统门户，新闻分类完整，页面易解析"
+      },
+      {
+        "name": "搜狐新闻",
+        "url": "https://news.sohu.com",
+        "type": "website",
+        "notes": "频道页 HTML 稳定，容易抓取"
+      }
+    ],
+    "medium_sources": [
+      {
+        "name": "腾讯新闻",
+        "url": "https://news.qq.com",
+        "type": "website",
+        "notes": "内容丰富，但部分频道需要JS渲染"
+      },
+      {
+        "name": "搜狗新闻",
+        "url": "https://news.sogou.com",
+        "type": "website",
+        "notes": "新闻搜索引擎，部分数据需动态加载"
+      }
+    ],
+    "hard_sources": [
+      {
+        "name": "今日头条",
+        "url": "https://www.toutiao.com",
+        "type": "website",
+        "notes": "接口加密，JS签名校验，需逆向API"
+      },
+      {
+        "name": "一点资讯",
+        "url": "https://www.yidianzixun.com",
+        "type": "website",
+        "notes": "个性化推荐，接口参数加密，反爬较强"
+      }
+    ]
+  }
+  
